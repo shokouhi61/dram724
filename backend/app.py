@@ -488,7 +488,7 @@ def create_order():
             },
         }
   )
-          @app.route("/api/orders/<int:order_id>/receipt", methods=["POST"])
+@app.route("/api/orders/<int:order_id>/receipt", methods=["POST"])
 def upload_receipt(order_id: int):
     user = get_authenticated_user()
     if not user:
