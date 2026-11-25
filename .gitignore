@@ -1,0 +1,25 @@
+# Environment & Secrets
+.env
+*.env
+*.pem
+*.key
+
+# Database & Uploaded Receipts
+*.db
+*.sqlite
+*.sqlite3
+uploads/
+receipts/
+
+# Python cache & virtual environments
+__pycache__/
+*.py[cod]
+*$py.class
+venv/
+.venv/
+env/
+
+# OS & Editor junk
+.DS_Store
+Thumbs.db
+*.log
