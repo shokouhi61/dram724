@@ -91,7 +91,7 @@
       font-size: 13px;
       font-weight: bold;
     }
-        .link-wa { background: #16a34a; color: #fff; }
+    .link-wa { background: #16a34a; color: #fff; }
     .link-tg { background: #0284c7; color: #fff; }
     .link-tel { background: #475569; color: #fff; }
     .ltr { direction: ltr; text-align: left; }
@@ -144,9 +144,11 @@
     <div class="muted">
       این ابزار صرفاً برای ثبت سفارش و ارسال رسید است؛ تایید واریز و تسویه نهایی توسط صرافی انجام می‌شود.
     </div>
+    <div id="clientErrorBox" class="muted hidden" style="color:#fca5a5;margin-top:6px;"></div>
   </div>
 
-  <div class="card" id="serverCard">
+  <!-- مخفی در حالت پیش‌فرض تا مشتری عادی نبیند؛ فقط برای مدیر/سوپرادمین نمایش داده می‌شود -->
+  <div class="card hidden" id="serverCard">
     <label class="muted">آدرس سرور بک‌اند (بدون اسلش اضافه در انتها)</label>
     <input id="backendUrlInput" class="ltr" placeholder="https://dram724.onrender.com" />
     <button class="btn-blue" onclick="saveAndConnect()">اتصال و بارگذاری</button>
@@ -173,7 +175,8 @@
           <span id="exIdBadge" class="badge ltr"></span>
         </div>
         <div class="muted">سفارش خود را ثبت کنید و رسید واریز را بفرستید تا مدیر بررسی کند.</div>
-                <label class="muted" style="display:block;margin-top:10px;">نوع تبدیل ارز (۶ حالت)</label>
+
+        <label class="muted" style="display:block;margin-top:10px;">نوع تبدیل ارز (۶ حالت)</label>
         <select id="pairSelect" onchange="updateCalculation()">
           <option value="AMD_TO_IRT">۱. درام به تومان (درام می‌دهم ← تومان می‌گیرم)</option>
           <option value="IRT_TO_AMD">۲. تومان به درام (تومان می‌دهم ← درام می‌گیرم)</option>
@@ -190,8 +193,7 @@
           </div>
           <div id="limitsInfoBox" class="limit-box"></div>
         </div>
-
-        <!-- روش پرداخت مشتری: پیش‌فرض نقدی -->
+                <!-- روش پرداخت مشتری: پیش‌فرض نقدی -->
         <div class="subcard">
           <div class="muted" style="font-weight:bold;color:#e2e8f0;">روش پرداخت شما به صرافی:</div>
           <div class="radio-group">
@@ -254,8 +256,9 @@
             <label class="muted" id="lblCustBankOrType">نام بانک / نوع کارت</label>
             <input id="customerBankOrTypeInput" placeholder="مثلاً بانک ملت یا Ameria بانک یا VISA کارت" />
           </div>
-  </div>
-          <label class="muted" style="display:block;margin-top:8px;">توضیحات سفارش (اختیاری)</label>
+        </div>
+
+        <label class="muted" style="display:block;margin-top:8px;">توضیحات سفارش (اختیاری)</label>
         <input id="orderNoteInput" placeholder="توضیح کوتاه یا هماهنگی" />
 
         <div class="notice-box" id="officeNoticeBox"></div>
@@ -316,7 +319,7 @@
         <input id="admMinUsd" type="number" step="any" class="ltr" />
         <label class="muted">حداکثر توان عملیاتی دلار (پیش‌فرض: 25000)</label>
         <input id="admMaxUsd" type="number" step="any" class="ltr" />
-                <h4 style="margin-top:12px;color:#93c5fd;">مشخصات حساب‌های تومانی، درامی و دلاری صرافی</h4>
+          <h4 style="margin-top:12px;color:#93c5fd;">مشخصات حساب‌های تومانی، درامی و دلاری صرافی</h4>
         <label class="muted">نام دارنده حساب تومانی (پیش‌فرض: تست تومان)</label>
         <input id="admHolderIrt" />
         <label class="muted">شماره کارت تومانی صرافی</label>
@@ -388,8 +391,9 @@
       </div>
     </div>
   </div>
-                                                                           </div>
-  <script>
+</div>
+
+<script>
   const tg = window.Telegram ? window.Telegram.WebApp : null;
   if (tg) {
     tg.ready();
@@ -456,7 +460,13 @@
       headers["X-Telegram-Init-Data"] = tg.initData;
     }
     const res = await fetch(base + path, { ...options, headers });
-    const data = await res.json();
+    const text = await res.text();
+    let data = null;
+    try {
+      data = JSON.parse(text);
+    } catch (e) {
+      throw new Error("پاسخ نامعتبر از سرور دریافت شد (احتمالاً سرور در حال راه‌اندازی یا خطاست).");
+    }
     if (!res.ok || !data.ok) {
       throw new Error(data.error || "خطای ارتباط با سرور");
     }
@@ -470,9 +480,14 @@
     localStorage.setItem("dram724_backend_url", val);
     await initApp();
   }
-      async function initApp() {
+    async function initApp() {
     const statusEl = document.getElementById("statusMsg");
+    const errBox = document.getElementById("clientErrorBox");
+    const serverCard = document.getElementById("serverCard");
+    errBox.classList.add("hidden");
+    errBox.textContent = "";
     statusEl.textContent = "در حال اتصال به سرور...";
+
     try {
       const urlParams = new URLSearchParams(window.location.search);
       const startapp = urlParams.get("startapp") || (tg && tg.initDataUnsafe ? tg.initDataUnsafe.start_param : "") || "";
@@ -482,6 +497,13 @@
       state.user = data.user;
       state.activeExchange = data.active_exchange;
       state.allExchanges = data.all_exchanges || [];
+
+      const isAdminUser = Boolean(data.user && (data.user.is_admin || data.user.is_super_admin));
+      if (isAdminUser) {
+        serverCard.classList.remove("hidden");
+      } else {
+        serverCard.classList.add("hidden");
+      }
 
       const uLabel = data.user.username ? `@${data.user.username}` : (data.user.first_name || data.user.user_id);
       document.getElementById("userTag").textContent = uLabel;
@@ -497,8 +519,11 @@
         renderActiveExchange();
       }
     } catch (err) {
+      serverCard.classList.add("hidden");
       statusEl.textContent = "خطا: " + err.message;
       document.getElementById("userTag").textContent = "خطا در اتصال";
+      errBox.textContent = "در حال حاضر ارتباط با سرور برقرار نشد. لطفاً چند لحظه بعد دوباره تلاش کنید.";
+      errBox.classList.remove("hidden");
     }
   }
 
@@ -540,17 +565,22 @@
 
     if (state.user && (state.user.is_admin || state.user.is_super_admin)) {
       document.getElementById("adminTabs").classList.remove("hidden");
+      document.getElementById("serverCard").classList.remove("hidden");
       fillAdminForm(ex);
     } else {
       document.getElementById("adminTabs").classList.add("hidden");
+      document.getElementById("adminView").classList.add("hidden");
+      document.getElementById("clientView").classList.remove("hidden");
+      document.getElementById("serverCard").classList.add("hidden");
     }
 
     togglePayMethodUI();
     toggleReceiveMethodUI();
     updateCalculation();
     loadMyOrders();
-    }
-      function getPairConfig(ex, pairCode) {
+  }
+
+  function getPairConfig(ex, pairCode) {
     const r = ex.rates;
     const p = ex.payment_accounts;
     const lim = ex.limits;
@@ -639,8 +669,9 @@
     } else {
       box.classList.add("hidden");
     }
-    }
-      function updateCalculation() {
+  }
+
+  function updateCalculation() {
     const ex = state.activeExchange;
     if (!ex) return;
     const pairCode = document.getElementById("pairSelect").value;
@@ -680,8 +711,7 @@
       alert("مشخصات حساب صرافی کپی شد.");
     }
   }
-
-  async function submitOrder() {
+    async function submitOrder() {
     const pair_code = document.getElementById("pairSelect").value;
     const send_amount = parseFloat(document.getElementById("sendAmountInput").value || "0");
     const pay_method = getSelectedPayMethod();
@@ -737,8 +767,9 @@
     } catch (err) {
       alert(err.message);
     }
-    }
-      function statusLabel(st) {
+  }
+
+  function statusLabel(st) {
     if (st === "awaiting_receipt") return `<span class="badge badge-warn">در انتظار آپلود رسید</span>`;
     if (st === "under_review") return `<span class="badge">در حال بررسی مدیر</span>`;
     if (st === "approved") return `<span class="badge badge-ok">تایید شد</span>`;
