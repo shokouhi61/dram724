@@ -202,7 +202,7 @@ def init_db():
         now = datetime.now(timezone.utc).isoformat()
         default_admins = ",".join(sorted(SUPER_ADMIN_IDS))
         cur.execute("""
-        INSERT INTO exchanges (
+            INSERT INTO exchanges (
             id, name, admin_ids,
             rate_amd_to_irt, rate_irt_to_amd,
             rate_usd_to_irt, rate_irt_to_usd,
@@ -312,6 +312,8 @@ def is_exchange_admin(user_id: str, exchange_row) -> bool:
         x.strip() for x in (exchange_row["admin_ids"] or "").split(",") if x.strip()
     }
     return user_id in admins
+
+
 def serialize_exchange(row):
     return {
         "id": row["id"],
@@ -516,7 +518,8 @@ def select_exchange():
     exchange_id = str(data.get("exchange_id", "")).strip()
     if not exchange_id:
         return jsonify({"ok": False, "error": "شناسه صرافی ارسال نشده است."}), 400
-        conn = get_db()
+
+    conn = get_db()
     cur = conn.cursor()
 
     lock = cur.execute(
@@ -607,8 +610,7 @@ def orders():
     except ValueError as e:
         conn.close()
         return jsonify({"ok": False, "error": str(e)}), 400
-
-    initial_status = "awaiting_receipt" if pay_method == "card" else "under_review"
+                initial_status = "awaiting_receipt" if pay_method == "card" else "under_review"
     now_dt = datetime.now(timezone.utc)
     now = now_dt.isoformat()
     tracking_code = f"DR-{int(now_dt.timestamp()) % 1000000}"
