@@ -2,8 +2,8 @@
 <html lang="fa" dir="rtl">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-  <title>مینی‌اپ ثبت سفارش صرافی</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>سامانه سفارش و رسید صرافی</title>
   <script src="https://telegram.org/js/telegram-web-app.js"></script>
   <style>
     :root {
@@ -13,548 +13,984 @@
       --text: #f8fafc;
       --muted: #94a3b8;
       --accent: #22c55e;
-      --accent-2: #3b82f6;
-      --danger: #ef4444;
+      --blue: #3b82f6;
       --warn: #f59e0b;
+      --danger: #ef4444;
       --border: #334155;
     }
-    * { box-sizing: border-box; }
+    * { box-sizing: border-box; font-family: Tahoma, Vazirmatn, sans-serif; }
     body {
       margin: 0;
-      padding: 14px;
-      font-family: Tahoma, Arial, sans-serif;
       background: var(--bg);
       color: var(--text);
+      padding: 12px;
       line-height: 1.6;
     }
-    .box {
+    .container { max-width: 560px; margin: 0 auto; }
+    .card {
       background: var(--card);
       border: 1px solid var(--border);
       border-radius: 14px;
       padding: 14px;
       margin-bottom: 12px;
     }
-    .subbox {
+    .subcard {
       background: var(--card-2);
       border: 1px solid var(--border);
       border-radius: 10px;
       padding: 10px;
       margin-top: 8px;
     }
-    h1, h2, h3 { margin: 0 0 8px 0; font-size: 16px; }
+    h2, h3, h4 { margin: 0 0 8px 0; }
     .muted { color: var(--muted); font-size: 13px; }
-    label { display: block; font-size: 13px; margin: 8px 0 4px 0; color: #cbd5e1; }
-    input, select, textarea {
+    .row { display: flex; gap: 8px; align-items: center; justify-content: space-between; flex-wrap: wrap; }
+    input, select, textarea, button {
       width: 100%;
-      padding: 10px;
+      padding: 11px;
       border-radius: 10px;
       border: 1px solid var(--border);
-      background: var(--card-2);
+      background: #0b1220;
       color: var(--text);
       font-size: 14px;
-      font-family: inherit;
+      margin-top: 6px;
     }
     button {
-      width: 100%;
-      padding: 11px 12px;
-      border: none;
-      border-radius: 10px;
-      font-size: 14px;
-      font-weight: bold;
       cursor: pointer;
-      margin-top: 8px;
-      font-family: inherit;
+      font-weight: bold;
+      border: none;
     }
     .btn-green { background: var(--accent); color: #052e16; }
-    .btn-blue { background: var(--accent-2); color: #ffffff; }
-    .btn-red { background: var(--danger); color: #ffffff; }
-    .btn-gray { background: #475569; color: #ffffff; }
+    .btn-blue { background: var(--blue); color: #fff; }
+    .btn-gray { background: #334155; color: #fff; }
+    .btn-red { background: var(--danger); color: #fff; }
+    .tabs { display: flex; gap: 8px; margin-bottom: 12px; }
+    .tabs button { margin-top: 0; }
+    .hidden { display: none !important; }
     .badge {
       display: inline-block;
       padding: 2px 8px;
       border-radius: 999px;
-      font-size: 11px;
+      font-size: 12px;
+      background: #334155;
+    }
+    .badge-ok { background: #14532d; color: #86efac; }
+    .badge-warn { background: #78350f; color: #fde68a; }
+    .badge-err { background: #7f1d1d; color: #fecaca; }
+    .contact-links {
+      display: flex;
+      gap: 8px;
+      margin-top: 8px;
+      flex-wrap: wrap;
+    }
+    .contact-links a {
+      flex: 1;
+      text-align: center;
+      text-decoration: none;
+      padding: 9px 10px;
+      border-radius: 9px;
+      font-size: 13px;
       font-weight: bold;
     }
-    .b-pending { background: rgba(245,158,11,.2); color: #fbbf24; }
-    .b-review { background: rgba(59,130,246,.2); color: #60a5fa; }
-    .b-approved { background: rgba(34,197,94,.2); color: #4ade80; }
-    .b-rejected { background: rgba(239,68,68,.2); color: #f87171; }
-    .b-warn { background: rgba(239,68,68,.25); color: #fca5a5; }
-    .row { display: flex; justify-content: space-between; gap: 8px; align-items: center; flex-wrap: wrap; }
-    .tabs { display: flex; gap: 8px; margin-bottom: 12px; }
-    .tabs button { margin-top: 0; }
-    .hidden { display: none; }
-    .msg { padding: 10px; border-radius: 10px; margin-bottom: 10px; font-size: 13px; }
-    .msg-err { background: rgba(239,68,68,.2); border: 1px solid var(--danger); color: #fecaca; }
-    .msg-ok { background: rgba(34,197,94,.2); border: 1px solid var(--accent); color: #bbf7d0; }
+        .link-wa { background: #16a34a; color: #fff; }
+    .link-tg { background: #0284c7; color: #fff; }
+    .link-tel { background: #475569; color: #fff; }
+    .ltr { direction: ltr; text-align: left; }
+    .notice-box {
+      border: 1px dashed var(--warn);
+      background: rgba(245, 158, 11, 0.08);
+      padding: 10px;
+      border-radius: 10px;
+      margin-top: 10px;
+      font-size: 13px;
+    }
+    .limit-box {
+      border: 1px solid #1d4ed8;
+      background: rgba(59, 130, 246, 0.08);
+      padding: 10px;
+      border-radius: 10px;
+      margin-top: 8px;
+      font-size: 12.5px;
+    }
+    .radio-group {
+      display: flex;
+      gap: 8px;
+      margin-top: 6px;
+    }
+    .radio-option {
+      flex: 1;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      background: #0b1220;
+      border: 1px solid var(--border);
+      padding: 9px 10px;
+      border-radius: 10px;
+      cursor: pointer;
+      font-size: 13px;
+    }
+    .radio-option input[type="radio"] {
+      width: auto;
+      margin: 0;
+    }
   </style>
 </head>
 <body>
-  <div id="alertBox" class="msg hidden"></div>
-
-  <div class="box">
+<div class="container">
+  <div class="card">
     <div class="row">
-      <strong id="appTitle">سامانه سفارش و رسید صرافی</strong>
-      <span id="userBadge" class="muted">در حال اتصال...</span>
+      <h3>سامانه سفارش و رسید صرافی</h3>
+      <span id="userTag" class="badge">در حال اتصال...</span>
     </div>
-    <div id="disclaimerText" class="muted" style="margin-top:6px;">
+    <div class="muted">
       این ابزار صرفاً برای ثبت سفارش و ارسال رسید است؛ تایید واریز و تسویه نهایی توسط صرافی انجام می‌شود.
     </div>
   </div>
 
-  <!-- تنظیم آدرس بک‌اند (برای تست و اتصال به سرور) -->
-  <div id="apiConfigBox" class="box">
-    <label for="apiBaseInput">آدرس سرور بک‌اند (بدون اسلش اضافه در انتها)</label>
-    <input id="apiBaseInput" type="text" placeholder="مثلاً https://your-app.onrender.com" />
-    <div id="devAuthRow" class="hidden">
-      <label for="devAuthInput">توکن تست محلی (فقط وقتی DEV فعال باشد)</label>
-      <input id="devAuthInput" type="text" placeholder="DEV_USER:1001:ali:Ali" />
-    </div>
-    <button class="btn-blue" onclick="saveApiAndBoot()">اتصال و بارگذاری</button>
+  <div class="card" id="serverCard">
+    <label class="muted">آدرس سرور بک‌اند (بدون اسلش اضافه در انتها)</label>
+    <input id="backendUrlInput" class="ltr" placeholder="https://dram724.onrender.com" />
+    <button class="btn-blue" onclick="saveAndConnect()">اتصال و بارگذاری</button>
+    <div id="statusMsg" class="muted" style="margin-top:6px;"></div>
   </div>
 
-  <!-- حالت لیست عمومی صرافی‌ها -->
-  <div id="publicListView" class="box hidden">
-    <h2>انتخاب صرافی</h2>
-    <p class="muted">یک صرافی را انتخاب کنید:</p>
-    <div id="exchangesContainer"></div>
+  <div id="publicSelectCard" class="card hidden">
+    <h3>انتخاب صرافی</h3>
+    <div class="muted">یک صرافی را انتخاب کنید:</div>
+    <div id="publicExchangeList"></div>
   </div>
 
-  <!-- حالت اختصاصی یک صرافی -->
-  <div id="exchangeView" class="hidden">
-    <div class="tabs">
+  <div id="mainAppArea" class="hidden">
+    <div id="adminTabs" class="tabs hidden">
       <button id="tabClientBtn" class="btn-blue" onclick="switchTab('client')">ثبت سفارش و رسید</button>
-      <button id="tabAdminBtn" class="btn-gray hidden" onclick="switchTab('admin')">پنل مدیر</button>
+      <button id="tabAdminBtn" class="btn-gray" onclick="switchTab('admin')">پنل مدیر</button>
     </div>
 
-    <div id="clientPanel">
-      <div class="box">
-        <h2 id="exName">نام صرافی</h2>
-        <p id="exNote" class="muted"></p>
-
-        <label for="rateSelect">انتخاب نرخ و کارت مقصد</label>
-        <select id="rateSelect" onchange="recalcReceive()"></select>
-
-        <div id="cardInfoBox" class="subbox">
-          <div class="muted">حساب / کارت مقصد:</div>
-          <div id="cardNumberText" style="font-weight:bold; font-size:15px; margin:4px 0;">-</div>
-          <div id="cardHolderText" class="muted">-</div>
-          <button class="btn-gray" onclick="copyCardNumber()">کپی شماره کارت</button>
-        </div>
-
-        <label for="amountPaidInput">مبلغ پرداختی شما</label>
-        <input id="amountPaidInput" type="number" step="any" placeholder="مبلغ را وارد کنید" oninput="recalcReceive()" />
-
-        <div class="subbox">
-          <span class="muted">مبلغ تقریبی دریافتی: </span>
-          <strong id="calcReceiveText">0</strong>
-        </div>
-
-        <button class="btn-green" onclick="submitOrder()">ثبت سفارش و دریافت کد پیگیری</button>
-      </div>
-
-      <div id="activeReceiptBox" class="box hidden">
-        <h3>آپلود رسید برای سفارش <span id="activeOrderCode"></span></h3>
-        <p class="muted">پس از واریز به کارت مقصد، تصویر رسید (JPG, PNG, WEBP) را انتخاب و ارسال کنید.</p>
-        <input id="receiptFileInput" type="file" accept="image/jpeg,image/png,image/webp" />
-        <button class="btn-blue" onclick="uploadReceipt()">ارسال رسید برای بررسی مدیر</button>
-      </div>
-
-      <div class="box">
-        <h3>سفارش‌های من</h3>
-        <div id="myOrdersList"></div>
-      </div>
-    </div>
-
-    <div id="adminPanel" class="hidden">
-      <div class="box">
+    <!-- تب مشتری -->
+    <div id="clientView">
+      <div class="card">
         <div class="row">
-          <h3>سفارش‌های صرافی (مدیریت)</h3>
-          <button class="btn-gray" style="width:auto; margin-top:0;" onclick="loadAdminOrders()">بروزرسانی</button>
+          <h3 id="exTitle">صرافی</h3>
+          <span id="exIdBadge" class="badge ltr"></span>
         </div>
-        <label for="adminFilterSelect">فیلتر وضعیت</label>
-        <select id="adminFilterSelect" onchange="loadAdminOrders()">
-          <option value="">همه وضعیت‌ها</option>
-          <option value="under_review">در انتظار تایید مدیر</option>
-          <option value="pending_receipt">در انتظار رسید</option>
-          <option value="approved">تایید شده</option>
-          <option value="rejected">رد شده</option>
+        <div class="muted">سفارش خود را ثبت کنید و رسید واریز را بفرستید تا مدیر بررسی کند.</div>
+                <label class="muted" style="display:block;margin-top:10px;">نوع تبدیل ارز (۶ حالت)</label>
+        <select id="pairSelect" onchange="updateCalculation()">
+          <option value="AMD_TO_IRT">۱. درام به تومان (درام می‌دهم ← تومان می‌گیرم)</option>
+          <option value="IRT_TO_AMD">۲. تومان به درام (تومان می‌دهم ← درام می‌گیرم)</option>
+          <option value="USD_TO_IRT">۳. دلار به تومان (دلار می‌دهم ← تومان می‌گیرم)</option>
+          <option value="IRT_TO_USD">۴. تومان به دلار (تومان می‌دهم ← دلار می‌گیرم)</option>
+          <option value="USD_TO_AMD">۵. دلار به درام (دلار می‌دهم ← درام می‌گیرم)</option>
+          <option value="AMD_TO_USD">۶. درام به دلار (درام می‌دهم ← دلار می‌گیرم)</option>
         </select>
-        <div id="adminOrdersList" style="margin-top:10px;"></div>
+
+        <div class="subcard">
+          <div class="row">
+            <span class="muted">نرخ فعلی صرافی:</span>
+            <strong id="activeRateText">-</strong>
+          </div>
+          <div id="limitsInfoBox" class="limit-box"></div>
+        </div>
+
+        <!-- روش پرداخت مشتری: پیش‌فرض نقدی -->
+        <div class="subcard">
+          <div class="muted" style="font-weight:bold;color:#e2e8f0;">روش پرداخت شما به صرافی:</div>
+          <div class="radio-group">
+            <label class="radio-option">
+              <input type="radio" name="payMethod" value="cash" checked onchange="togglePayMethodUI()" />
+              <span>نقدی</span>
+            </label>
+            <label class="radio-option">
+              <input type="radio" name="payMethod" value="card" onchange="togglePayMethodUI()" />
+              <span>کارتی</span>
+            </label>
+          </div>
+
+          <div id="exchangePayCardBox" class="hidden" style="margin-top:10px;">
+            <div class="muted" id="payAccountTitle">مشخصات حساب مقصد صرافی:</div>
+            <div id="payAccountDetails" style="margin-top:4px;font-size:13px;"></div>
+            <button type="button" class="btn-gray" onclick="copyExchangePayInfo()">کپی مشخصات حساب صرافی</button>
+          </div>
+        </div>
+
+        <label class="muted" style="display:block;margin-top:10px;" id="sendAmountLabel">مبلغ پرداختی شما</label>
+        <input id="sendAmountInput" type="number" step="any" class="ltr" placeholder="مبلغ را وارد کنید" oninput="updateCalculation()" />
+        <div id="limitWarningText" style="color:#fca5a5;font-size:12.5px;margin-top:4px;"></div>
+
+        <div class="subcard">
+          <div class="row">
+            <span class="muted">مبلغ تقریبی دریافتی شما:</span>
+            <strong id="receiveAmountText" style="color:#4ade80;font-size:16px;">0</strong>
+          </div>
+        </div>
+
+        <!-- روش دریافت وجه مشتری: پیش‌فرض نقدی -->
+        <div class="subcard">
+          <div class="muted" style="font-weight:bold;color:#e2e8f0;">روش دریافت وجه توسط شما:</div>
+          <div class="radio-group">
+            <label class="radio-option">
+              <input type="radio" name="receiveMethod" value="cash" checked onchange="toggleReceiveMethodUI()" />
+              <span>نقدی</span>
+            </label>
+            <label class="radio-option">
+              <input type="radio" name="receiveMethod" value="card" onchange="toggleReceiveMethodUI()" />
+              <span>کارتی</span>
+            </label>
+          </div>
+
+          <div id="customerReceiveCardFields" class="hidden" style="margin-top:10px;">
+            <label class="muted">نام دارنده حساب دریافتی</label>
+            <input id="customerHolderInput" placeholder="نام و نام خانوادگی صاحب حساب" />
+
+            <label class="muted">شماره کارت دریافتی شما</label>
+            <input id="customerCardInput" class="ltr" placeholder="شماره کارت" />
+
+            <div id="custIrtExtraBox" class="hidden">
+              <label class="muted">شماره شبا (اختیاری / تومانی)</label>
+              <input id="customerShebaInput" class="ltr" placeholder="IR..." />
+              <label class="muted">شماره حساب (اختیاری / تومانی)</label>
+              <input id="customerAccountInput" class="ltr" placeholder="شماره حساب" />
+            </div>
+
+            <label class="muted" id="lblCustBankOrType">نام بانک / نوع کارت</label>
+            <input id="customerBankOrTypeInput" placeholder="مثلاً بانک ملت یا Ameria بانک یا VISA کارت" />
+          </div>
+  </div>
+          <label class="muted" style="display:block;margin-top:8px;">توضیحات سفارش (اختیاری)</label>
+        <input id="orderNoteInput" placeholder="توضیح کوتاه یا هماهنگی" />
+
+        <div class="notice-box" id="officeNoticeBox"></div>
+
+        <button class="btn-green" style="margin-top:12px;" onclick="submitOrder()">ثبت سفارش و دریافت کد پیگیری</button>
+        <div id="orderResultBox" class="subcard hidden"></div>
+      </div>
+
+      <div class="card">
+        <div class="row">
+          <h3>سفارش‌های من</h3>
+          <button style="width:auto;padding:6px 12px;margin:0;" class="btn-gray" onclick="loadMyOrders()">بروزرسانی</button>
+        </div>
+        <div id="myOrdersList" class="muted" style="margin-top:8px;">در حال بارگذاری...</div>
       </div>
     </div>
-          </div>
+
+    <!-- تب مدیر -->
+    <div id="adminView" class="hidden">
+      <div class="card">
+        <h3>تنظیم نرخ‌ها، سقف عملیاتی، حساب‌ها و اطلاعات صرافی</h3>
+        <div class="muted">هر تغییری ذخیره شود، بلافاصله جایگزین مقادیر قبلی می‌شود.</div>
+
+        <label class="muted">نام صرافی</label>
+        <input id="admName" />
+
+        <h4 style="margin-top:12px;color:#93c5fd;">۶ نرخ تبدیل ارز</h4>
+        <label class="muted">۱. نرخ درام به تومان (مشتری درام می‌دهد، تومان می‌گیرد)</label>
+        <input id="admRateAmdToIrt" type="number" step="any" class="ltr" />
+
+        <label class="muted">۲. نرخ تومان به درام (مشتری تومان می‌دهد، درام می‌گیرد)</label>
+        <input id="admRateIrtToAmd" type="number" step="any" class="ltr" />
+
+        <label class="muted">۳. نرخ دلار به تومان (مشتری دلار می‌دهد، تومان می‌گیرد)</label>
+        <input id="admRateUsdToIrt" type="number" step="any" class="ltr" />
+
+        <label class="muted">۴. نرخ تومان به دلار (مشتری تومان می‌دهد، دلار می‌گیرد)</label>
+        <input id="admRateIrtToUsd" type="number" step="any" class="ltr" />
+
+        <label class="muted">۵. نرخ دلار به درام (مشتری دلار می‌دهد، درام می‌گیرد)</label>
+        <input id="admRateUsdToAmd" type="number" step="any" class="ltr" />
+
+        <label class="muted">۶. نرخ درام به دلار (مشتری درام می‌دهد، دلار می‌گیرد)</label>
+        <input id="admRateAmdToUsd" type="number" step="any" class="ltr" />
+
+        <h4 style="margin-top:12px;color:#93c5fd;">سقف توان عملیاتی و محدودیت هر ارز (پرداخت و دریافت)</h4>
+        <label class="muted">حداقل درام (AMD)</label>
+        <input id="admMinAmd" type="number" step="any" class="ltr" />
+        <label class="muted">حداکثر توان عملیاتی درام (پیش‌فرض: 1000000)</label>
+        <input id="admMaxAmd" type="number" step="any" class="ltr" />
+
+        <label class="muted">حداقل تومان</label>
+        <input id="admMinIrt" type="number" step="any" class="ltr" />
+        <label class="muted">حداکثر توان عملیاتی تومان (پیش‌فرض: 7500000000)</label>
+        <input id="admMaxIrt" type="number" step="any" class="ltr" />
+
+        <label class="muted">حداقل دلار (USD)</label>
+        <input id="admMinUsd" type="number" step="any" class="ltr" />
+        <label class="muted">حداکثر توان عملیاتی دلار (پیش‌فرض: 25000)</label>
+        <input id="admMaxUsd" type="number" step="any" class="ltr" />
+                <h4 style="margin-top:12px;color:#93c5fd;">مشخصات حساب‌های تومانی، درامی و دلاری صرافی</h4>
+        <label class="muted">نام دارنده حساب تومانی (پیش‌فرض: تست تومان)</label>
+        <input id="admHolderIrt" />
+        <label class="muted">شماره کارت تومانی صرافی</label>
+        <input id="admCardIrt" class="ltr" />
+        <label class="muted">شماره شبا تومانی صرافی</label>
+        <input id="admShebaIrt" class="ltr" />
+        <label class="muted">شماره حساب تومانی صرافی</label>
+        <input id="admAccountIrt" class="ltr" />
+        <label class="muted">نام بانک تومانی (پیش‌فرض: بانک ملت)</label>
+        <input id="admBankIrt" />
+
+        <label class="muted" style="margin-top:8px;display:block;">نام دارنده حساب درامی (پیش‌فرض: تست درام)</label>
+        <input id="admHolderAmd" />
+        <label class="muted">شماره کارت درامی صرافی (AMD)</label>
+        <input id="admCardAmd" class="ltr" />
+        <label class="muted">نام بانک درامی (پیش‌فرض: Ameria بانک)</label>
+        <input id="admBankAmd" />
+
+        <label class="muted" style="margin-top:8px;display:block;">نام دارنده حساب دلاری (پیش‌فرض: تست دلار)</label>
+        <input id="admHolderUsd" />
+        <label class="muted">شماره کارت / حساب دلاری صرافی (USD)</label>
+        <input id="admCardUsd" class="ltr" />
+        <label class="muted">نوع کارت دلاری (پیش‌فرض: VISA کارت)</label>
+        <input id="admCardTypeUsd" />
+
+        <h4 style="margin-top:12px;color:#93c5fd;">آدرس دفتر، ساعات کاری و راه‌های ارتباط مستقیم</h4>
+        <label class="muted">آدرس صرافی</label>
+        <input id="admAddress" />
+
+        <label class="muted">ساعات کاری صرافی</label>
+        <input id="admHours" />
+
+        <label class="muted">شماره تلفن صرافی</label>
+        <input id="admPhone" class="ltr" />
+
+        <label class="muted">لینک واتس‌اپ صرافی</label>
+        <input id="admWhatsapp" class="ltr" />
+
+        <label class="muted">لینک یا آیدی تلگرام صرافی</label>
+        <input id="admTelegram" class="ltr" />
+
+        <div id="superAdminIdsBox" class="hidden">
+          <label class="muted">آیدی عددی مدیران این صرافی (با ویرگول جدا کنید)</label>
+          <input id="admAdminIds" class="ltr" />
+        </div>
+
+        <button class="btn-green" style="margin-top:12px;" onclick="saveExchangeSettings()">ذخیره نرخ‌ها و اطلاعات صرافی</button>
+        <div id="adminSaveMsg" class="muted" style="margin-top:6px;"></div>
+      </div>
+
+      <div id="superAdminCreateCard" class="card hidden">
+        <h3>ساخت صرافی جدید (ویژه مالک سامانه)</h3>
+        <label class="muted">شناسه انگلیسی صرافی (مثلاً ex2)</label>
+        <input id="newExId" class="ltr" placeholder="ex2" />
+        <label class="muted">نام صرافی</label>
+        <input id="newExName" placeholder="صرافی دوم" />
+        <label class="muted">آیدی عددی مدیر صرافی</label>
+        <input id="newExAdmins" class="ltr" placeholder="123456789" />
+        <button class="btn-blue" onclick="createNewExchange()">ایجاد صرافی جدید</button>
+        <div id="allExchangesInfo" class="muted" style="margin-top:8px;"></div>
+      </div>
+
+      <div class="card">
+        <div class="row">
+          <h3>مدیریت سفارش‌ها و رسیدها</h3>
+          <button style="width:auto;padding:6px 12px;margin:0;" class="btn-gray" onclick="loadAdminOrders()">بروزرسانی</button>
+        </div>
+        <div id="adminOrdersList" class="muted" style="margin-top:8px;">در حال بارگذاری...</div>
+      </div>
+    </div>
+  </div>
+                                                                           </div>
   <script>
-    const tg = window.Telegram && window.Telegram.WebApp ? window.Telegram.WebApp : null;
-    if (tg) {
-      tg.ready();
-      tg.expand();
+  const tg = window.Telegram ? window.Telegram.WebApp : null;
+  if (tg) {
+    tg.ready();
+    tg.expand();
+  }
+
+  let state = {
+    backendUrl: localStorage.getItem("dram724_backend_url") || "https://dram724.onrender.com",
+    user: null,
+    activeExchange: null,
+    allExchanges: [],
+    lastPayCopyText: ""
+  };
+
+  document.getElementById("backendUrlInput").value = state.backendUrl;
+
+  function normalizeUrl(raw, defaultPrefix = "https://") {
+    if (!raw) return "#";
+    const s = raw.trim();
+    if (s.startsWith("http://") || s.startsWith("https://") || s.startsWith("tel:")) return s;
+    if (s.startsWith("@")) return "https://t.me/" + s.slice(1);
+    return defaultPrefix + s;
+  }
+
+  function formatNumber(n) {
+    if (isNaN(n)) return "0";
+    return Number(n).toLocaleString("en-US", { maximumFractionDigits: 2 });
+  }
+
+  function getSelectedPayMethod() {
+    const el = document.querySelector('input[name="payMethod"]:checked');
+    return el ? el.value : "cash";
+  }
+
+  function getSelectedReceiveMethod() {
+    const el = document.querySelector('input[name="receiveMethod"]:checked');
+    return el ? el.value : "cash";
+  }
+
+  function buildContactBlockHtml(ex) {
+    const c = ex.contact || {};
+    const waUrl = normalizeUrl(c.whatsapp);
+    const tgUrl = normalizeUrl(c.telegram);
+    const telUrl = "tel:" + (c.phone || "").replace(/\s+/g, "");
+    return `
+      <div>
+        <strong>تحویل نقدی و مراجعه حضوری:</strong> در صورت تحویل یا پرداخت به‌صورت نقدی، لطفاً در ساعات کاری <strong>${c.working_hours || "-"}</strong> به دفتر <strong>${ex.name}</strong> واقع در <strong>${c.address || "-"}</strong> مراجعه فرمایید یا از طریق راه‌های زیر مستقیماً در ارتباط باشید:
+      </div>
+      <div style="margin-top:6px;">
+        تلفن: <span class="ltr" style="font-weight:bold;">${c.phone || "-"}</span>
+      </div>
+      <div class="contact-links">
+        <a class="link-wa" href="${waUrl}" target="_blank" rel="noopener">ارتباط مستقیم در واتس‌اپ</a>
+        <a class="link-tg" href="${tgUrl}" target="_blank" rel="noopener">ارتباط مستقیم در تلگرام</a>
+        <a class="link-tel" href="${telUrl}">تماس تلفنی</a>
+      </div>
+    `;
+  }
+
+  async function apiFetch(path, options = {}) {
+    const base = state.backendUrl.replace(/\/+$/, "");
+    const headers = options.headers || {};
+    if (tg && tg.initData) {
+      headers["X-Telegram-Init-Data"] = tg.initData;
+    }
+    const res = await fetch(base + path, { ...options, headers });
+    const data = await res.json();
+    if (!res.ok || !data.ok) {
+      throw new Error(data.error || "خطای ارتباط با سرور");
+    }
+    return data;
+  }
+
+  async function saveAndConnect() {
+    const val = document.getElementById("backendUrlInput").value.trim().replace(/\/+$/, "");
+    if (!val) return;
+    state.backendUrl = val;
+    localStorage.setItem("dram724_backend_url", val);
+    await initApp();
+  }
+      async function initApp() {
+    const statusEl = document.getElementById("statusMsg");
+    statusEl.textContent = "در حال اتصال به سرور...";
+    try {
+      const urlParams = new URLSearchParams(window.location.search);
+      const startapp = urlParams.get("startapp") || (tg && tg.initDataUnsafe ? tg.initDataUnsafe.start_param : "") || "";
+      const query = startapp ? `?startapp=${encodeURIComponent(startapp)}` : "";
+      const data = await apiFetch("/api/bootstrap" + query);
+
+      state.user = data.user;
+      state.activeExchange = data.active_exchange;
+      state.allExchanges = data.all_exchanges || [];
+
+      const uLabel = data.user.username ? `@${data.user.username}` : (data.user.first_name || data.user.user_id);
+      document.getElementById("userTag").textContent = uLabel;
+      statusEl.textContent = "متصل شد.";
+
+      if (!data.locked) {
+        document.getElementById("publicSelectCard").classList.remove("hidden");
+        document.getElementById("mainAppArea").classList.add("hidden");
+        renderPublicExchanges(data.public_exchanges || []);
+      } else {
+        document.getElementById("publicSelectCard").classList.add("hidden");
+        document.getElementById("mainAppArea").classList.remove("hidden");
+        renderActiveExchange();
+      }
+    } catch (err) {
+      statusEl.textContent = "خطا: " + err.message;
+      document.getElementById("userTag").textContent = "خطا در اتصال";
+    }
+  }
+
+  function renderPublicExchanges(list) {
+    const box = document.getElementById("publicExchangeList");
+    if (!list.length) {
+      box.innerHTML = "<div class='muted'>هیچ صرافی فعالی ثبت نشده است.</div>";
+      return;
+    }
+    box.innerHTML = list.map(ex => `
+      <div class="subcard">
+        <strong>${ex.name}</strong>
+        <div class="muted">${ex.contact.address || ""}</div>
+        <button class="btn-green" onclick="selectPublicExchange('${ex.id}')">ورود به این صرافی</button>
+      </div>
+    `).join("");
+  }
+
+  async function selectPublicExchange(exchangeId) {
+    try {
+      await apiFetch("/api/select-exchange", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ exchange_id: exchangeId })
+      });
+      await initApp();
+    } catch (err) {
+      alert(err.message);
+    }
+  }
+
+  function renderActiveExchange() {
+    const ex = state.activeExchange;
+    if (!ex) return;
+
+    document.getElementById("exTitle").textContent = ex.name;
+    document.getElementById("exIdBadge").textContent = ex.id;
+    document.getElementById("officeNoticeBox").innerHTML = buildContactBlockHtml(ex);
+
+    if (state.user && (state.user.is_admin || state.user.is_super_admin)) {
+      document.getElementById("adminTabs").classList.remove("hidden");
+      fillAdminForm(ex);
+    } else {
+      document.getElementById("adminTabs").classList.add("hidden");
     }
 
-    let state = {
-      apiBase: localStorage.getItem("ex_api_base") || "",
-      devAuth: localStorage.getItem("ex_dev_auth") || "",
-      mode: null,
-      exchange: null,
-      rates: [],
-      orders: [],
-      isAdmin: false,
-      selectedOrderId: null
+    togglePayMethodUI();
+    toggleReceiveMethodUI();
+    updateCalculation();
+    loadMyOrders();
+    }
+      function getPairConfig(ex, pairCode) {
+    const r = ex.rates;
+    const p = ex.payment_accounts;
+    const lim = ex.limits;
+    const map = {
+      "AMD_TO_IRT": { fromCur: "AMD", toCur: "IRT", fromLabel: "درام (AMD)", toLabel: "تومان", rate: r.AMD_TO_IRT, op: "mul" },
+      "IRT_TO_AMD": { fromCur: "IRT", toCur: "AMD", fromLabel: "تومان", toLabel: "درام (AMD)", rate: r.IRT_TO_AMD, op: "div" },
+      "USD_TO_IRT": { fromCur: "USD", toCur: "IRT", fromLabel: "دلار (USD)", toLabel: "تومان", rate: r.USD_TO_IRT, op: "mul" },
+      "IRT_TO_USD": { fromCur: "IRT", toCur: "USD", fromLabel: "تومان", toLabel: "دلار (USD)", rate: r.IRT_TO_USD, op: "div" },
+      "USD_TO_AMD": { fromCur: "USD", toCur: "AMD", fromLabel: "دلار (USD)", toLabel: "درام (AMD)", rate: r.USD_TO_AMD, op: "mul" },
+      "AMD_TO_USD": { fromCur: "AMD", toCur: "USD", fromLabel: "درام (AMD)", toLabel: "دلار (USD)", rate: r.AMD_TO_USD, op: "div" }
     };
+    const item = map[pairCode];
+    return {
+      ...item,
+      payAcc: p[item.fromCur],
+      fromLimit: lim[item.fromCur],
+      toLimit: lim[item.toCur]
+    };
+  }
 
-    function showAlert(text, isError = true) {
-      const el = document.getElementById("alertBox");
-      el.textContent = text;
-      el.className = "msg " + (isError ? "msg-err" : "msg-ok");
+  function renderPayAccountBox(cfg) {
+    const acc = cfg.payAcc || {};
+    if (cfg.fromCur === "IRT") {
+      state.lastPayCopyText = `دارنده حساب: ${acc.holder || ""} | بانک: ${acc.bank || ""} | کارت: ${acc.card || ""} | شبا: ${acc.sheba || ""} | حساب: ${acc.account || ""}`;
+      document.getElementById("payAccountTitle").textContent = "مشخصات حساب تومانی صرافی:";
+      document.getElementById("payAccountDetails").innerHTML = `
+        <div>نام دارنده حساب: <strong>${acc.holder || "-"}</strong></div>
+        <div>نام بانک: <strong>${acc.bank || "-"}</strong></div>
+        <div>شماره کارت: <span class="ltr" style="font-weight:bold;">${acc.card || "-"}</span></div>
+        <div>شماره شبا: <span class="ltr" style="font-weight:bold;">${acc.sheba || "-"}</span></div>
+        <div>شماره حساب: <span class="ltr" style="font-weight:bold;">${acc.account || "-"}</span></div>
+      `;
+    } else if (cfg.fromCur === "AMD") {
+      state.lastPayCopyText = `دارنده حساب: ${acc.holder || ""} | بانک: ${acc.bank || ""} | کارت: ${acc.card || ""}`;
+      document.getElementById("payAccountTitle").textContent = "مشخصات حساب درامی صرافی:";
+      document.getElementById("payAccountDetails").innerHTML = `
+        <div>نام دارنده حساب: <strong>${acc.holder || "-"}</strong></div>
+        <div>نام بانک: <strong>${acc.bank || "-"}</strong></div>
+        <div>شماره کارت: <span class="ltr" style="font-weight:bold;">${acc.card || "-"}</span></div>
+      `;
+    } else {
+      state.lastPayCopyText = `دارنده حساب: ${acc.holder || ""} | نوع کارت: ${acc.card_type || ""} | کارت/حساب: ${acc.card || ""}`;
+      document.getElementById("payAccountTitle").textContent = "مشخصات حساب دلاری صرافی:";
+      document.getElementById("payAccountDetails").innerHTML = `
+        <div>نام دارنده حساب: <strong>${acc.holder || "-"}</strong></div>
+        <div>نوع کارت: <strong>${acc.card_type || "-"}</strong></div>
+        <div>شماره کارت / حساب: <span class="ltr" style="font-weight:bold;">${acc.card || "-"}</span></div>
+      `;
     }
+  }
 
-    function clearAlert() {
-      const el = document.getElementById("alertBox");
-      el.className = "msg hidden";
-      el.textContent = "";
+  function togglePayMethodUI() {
+    const method = getSelectedPayMethod();
+    const box = document.getElementById("exchangePayCardBox");
+    if (method === "card") {
+      box.classList.remove("hidden");
+    } else {
+      box.classList.add("hidden");
     }
+  }
 
-    function getInitData() {
-      if (tg && tg.initData && tg.initData.length > 0) {
-        return tg.initData;
-      }
-      if (state.devAuth) {
-        return state.devAuth;
-      }
-      return "";
-    }
+  function toggleReceiveMethodUI() {
+    const method = getSelectedReceiveMethod();
+    const box = document.getElementById("customerReceiveCardFields");
+    const ex = state.activeExchange;
+    if (!ex) return;
 
-    function getStartParam() {
-      if (tg && tg.initDataUnsafe && tg.initDataUnsafe.start_param) {
-        return String(tg.initDataUnsafe.start_param).trim();
-      }
-      const params = new URLSearchParams(window.location.search);
-      return (params.get("startapp") || params.get("tgWebAppStartParam") || "").trim();
-    }
+    const pairCode = document.getElementById("pairSelect").value;
+    const cfg = getPairConfig(ex, pairCode);
 
-    async function apiFetch(path, options = {}) {
-      const headers = Object.assign({}, options.headers || {});
-      const initData = getInitData();
-      if (initData) {
-        headers["X-Telegram-Init-Data"] = initData;
-      }
-      const res = await fetch(state.apiBase + path, Object.assign({}, options, { headers }));
-      const data = await res.json();
-      if (!res.ok || !data.ok) {
-        throw new Error(data.error || "خطا در ارتباط با سرور");
-      }
-      return data;
-    }
+    if (method === "card") {
+      box.classList.remove("hidden");
+      const irtBox = document.getElementById("custIrtExtraBox");
+      const lblBankOrType = document.getElementById("lblCustBankOrType");
 
-    function saveApiAndBoot() {
-      clearAlert();
-      const urlVal = document.getElementById("apiBaseInput").value.trim().replace(/\/+$/, "");
-      const devVal = document.getElementById("devAuthInput").value.trim();
-      if (!urlVal) {
-        showAlert("لطفاً آدرس سرور بک‌اند را وارد کنید.");
-        return;
-      }
-      state.apiBase = urlVal;
-      state.devAuth = devVal;
-      localStorage.setItem("ex_api_base", urlVal);
-      localStorage.setItem("ex_dev_auth", devVal);
-      bootApp();
-    }
-
-    async function bootApp(selectExchangeId = "") {
-      if (!state.apiBase) {
-        showAlert("ابتدا آدرس سرور بک‌اند را وارد کنید.");
-        return;
-      }
-      clearAlert();
-      try {
-        const data = await apiFetch("/api/bootstrap", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            startapp: selectExchangeId ? "" : getStartParam(),
-            select_exchange_id: selectExchangeId
-          })
-        });
-
-        state.mode = data.mode;
-        state.isAdmin = !!data.is_admin;
-        const u = data.user || {};
-        document.getElementById("userBadge").textContent =
-          u.username ? `@${u.username}` : `ID: ${u.telegram_id || ""}`;
-
-        if (data.mode === "exchange") {
-          renderExchangeMode(data);
-        } else {
-          renderPublicList(data.exchanges || []);
-        }
-      } catch (err) {
-        showAlert(err.message);
-      }
-    }
-
-    function renderPublicList(exchanges) {
-      document.getElementById("publicListView").classList.remove("hidden");
-      document.getElementById("exchangeView").classList.add("hidden");
-      const container = document.getElementById("exchangesContainer");
-      if (!exchanges.length) {
-        container.innerHTML = `<p class="muted">در حال حاضر صرافی فعالی در لیست عمومی نیست.</p>`;
-        return;
-      }
-      container.innerHTML = exchanges.map(ex => `
-        <div class="subbox">
-          <strong>${escapeHtml(ex.name)}</strong>
-          <div class="muted">${escapeHtml(ex.welcome_note || "")}</div>
-          <button class="btn-green" onclick="bootApp('${escapeAttr(ex.id)}')">ورود به این صرافی</button>
-        </div>
-      `).join("");
-    }
-
-    function renderExchangeMode(data) {
-      document.getElementById("publicListView").classList.add("hidden");
-      document.getElementById("exchangeView").classList.remove("hidden");
-      state.exchange = data.exchange;
-      state.rates = data.rates || [];
-      state.orders = data.orders || [];
-
-      document.getElementById("appTitle").textContent = data.exchange.name;
-      document.getElementById("exName").textContent = data.exchange.name;
-      document.getElementById("exNote").textContent = data.exchange.welcome_note || "";
-
-      const selectEl = document.getElementById("rateSelect");
-      selectEl.innerHTML = state.rates.map(r => `
-        <option value="${r.id}">${escapeHtml(r.pair_label)} | نرخ: ${r.rate}</option>
-      `).join("");
-
-      recalcReceive();
-      renderMyOrders();
-
-      const adminBtn = document.getElementById("tabAdminBtn");
-      if (state.isAdmin) {
-        adminBtn.classList.remove("hidden");
+      if (cfg.toCur === "IRT") {
+        irtBox.classList.remove("hidden");
+        lblBankOrType.textContent = "نام بانک مقصد (مثلاً بانک ملت)";
+      } else if (cfg.toCur === "AMD") {
+        irtBox.classList.add("hidden");
+        lblBankOrType.textContent = "نام بانک مقصد (مثلاً Ameria بانک)";
       } else {
-        adminBtn.classList.add("hidden");
-        switchTab("client");
+        irtBox.classList.add("hidden");
+        lblBankOrType.textContent = "نوع کارت مقصد (مثلاً VISA کارت)";
+      }
+    } else {
+      box.classList.add("hidden");
+    }
+    }
+      function updateCalculation() {
+    const ex = state.activeExchange;
+    if (!ex) return;
+    const pairCode = document.getElementById("pairSelect").value;
+    const cfg = getPairConfig(ex, pairCode);
+    const amount = parseFloat(document.getElementById("sendAmountInput").value || "0");
+    const warnEl = document.getElementById("limitWarningText");
+
+    document.getElementById("activeRateText").textContent = formatNumber(cfg.rate);
+    document.getElementById("sendAmountLabel").textContent = `مبلغ پرداختی شما (${cfg.fromLabel})`;
+
+    document.getElementById("limitsInfoBox").innerHTML = `
+      <div><strong>محدوده و توان عملیاتی ${cfg.fromLabel}:</strong> حداقل ${formatNumber(cfg.fromLimit.min)} — حداکثر موجودی/سقف ${formatNumber(cfg.fromLimit.max)}</div>
+      <div><strong>حداکثر توان عملیاتی ${cfg.toLabel}:</strong> ${formatNumber(cfg.toLimit.max)}</div>
+    `;
+
+    renderPayAccountBox(cfg);
+    toggleReceiveMethodUI();
+
+    let receive = 0;
+    warnEl.textContent = "";
+    if (amount > 0 && cfg.rate > 0) {
+      receive = cfg.op === "mul" ? amount * cfg.rate : amount / cfg.rate;
+      if (amount < cfg.fromLimit.min) {
+        warnEl.textContent = `مبلغ پرداختی کمتر از حداقل مجاز (${formatNumber(cfg.fromLimit.min)} ${cfg.fromLabel}) است.`;
+      } else if (amount > cfg.fromLimit.max) {
+        warnEl.textContent = `مبلغ پرداختی از حداکثر توان عملیاتی صرافی (${formatNumber(cfg.fromLimit.max)} ${cfg.fromLabel}) بیشتر است.`;
+      } else if (receive > cfg.toLimit.max) {
+        warnEl.textContent = `مبلغ دریافتی (${formatNumber(receive)} ${cfg.toLabel}) از حداکثر توان عملیاتی صرافی (${formatNumber(cfg.toLimit.max)} ${cfg.toLabel}) بیشتر است.`;
       }
     }
+    document.getElementById("receiveAmountText").textContent = `${formatNumber(receive)} ${cfg.toLabel}`;
+  }
 
-    function getSelectedRateObj() {
-      const id = Number(document.getElementById("rateSelect").value);
-      return state.rates.find(r => Number(r.id) === id) || null;
+  function copyExchangePayInfo() {
+    if (navigator.clipboard && state.lastPayCopyText) {
+      navigator.clipboard.writeText(state.lastPayCopyText);
+      alert("مشخصات حساب صرافی کپی شد.");
+    }
+  }
+
+  async function submitOrder() {
+    const pair_code = document.getElementById("pairSelect").value;
+    const send_amount = parseFloat(document.getElementById("sendAmountInput").value || "0");
+    const pay_method = getSelectedPayMethod();
+    const receive_method = getSelectedReceiveMethod();
+
+    const customer_holder_name = receive_method === "card" ? document.getElementById("customerHolderInput").value.trim() : "";
+    const customer_dest_card = receive_method === "card" ? document.getElementById("customerCardInput").value.trim() : "";
+    const customer_sheba = receive_method === "card" ? document.getElementById("customerShebaInput").value.trim() : "";
+    const customer_account = receive_method === "card" ? document.getElementById("customerAccountInput").value.trim() : "";
+    const customer_bank_or_card_type = receive_method === "card" ? document.getElementById("customerBankOrTypeInput").value.trim() : "";
+    const note = document.getElementById("orderNoteInput").value.trim();
+
+    if (!send_amount || send_amount <= 0) {
+      alert("لطفاً مبلغ پرداختی معتبر وارد کنید.");
+      return;
     }
 
-    function recalcReceive() {
-      const r = getSelectedRateObj();
-      const amount = parseFloat(document.getElementById("amountPaidInput").value) || 0;
-      if (!r) {
-        document.getElementById("cardNumberText").textContent = "-";
-        document.getElementById("cardHolderText").textContent = "-";
-        document.getElementById("calcReceiveText").textContent = "0";
-        return;
-      }
-      document.getElementById("cardNumberText").textContent = r.card_number;
-      document.getElementById("cardHolderText").textContent = `صاحب حساب: ${r.card_holder}`;
-      const recv = r.rate > 0 ? (amount / r.rate).toFixed(4) : "0";
-      document.getElementById("calcReceiveText").textContent = recv;
+    try {
+      const data = await apiFetch("/api/orders", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          pair_code,
+          send_amount,
+          pay_method,
+          receive_method,
+          customer_holder_name,
+          customer_dest_card,
+          customer_sheba,
+          customer_account,
+          customer_bank_or_card_type,
+          note
+        })
+      });
+      const o = data.order;
+      const box = document.getElementById("orderResultBox");
+      box.classList.remove("hidden");
+
+      const receiptGuide = o.pay_method === "card"
+        ? `<div>لطفاً از بخش «سفارش‌های من» در پایین همین صفحه، رسید واریز کارتی خود را بارگذاری کنید.</div>`
+        : `<div>روش پرداخت شما <strong>نقدی</strong> ثبت شده است؛ جهت هماهنگی یا مراجعه حضوری طبق اطلاعات زیر اقدام فرمایید.</div>`;
+
+      box.innerHTML = `
+        <div style="color:#4ade80;font-weight:bold;">سفارش ثبت شد — کد پیگیری: ${o.tracking_code}</div>
+        <div class="muted">پرداختی: ${formatNumber(o.send_amount)} ${o.from_currency} (${o.pay_method === "card" ? "کارتی" : "نقدی"}) | دریافتی: ${formatNumber(o.receive_amount)} ${o.to_currency} (${o.receive_method === "card" ? "کارتی" : "نقدی"})</div>
+        <div class="muted">نرخ ثبت‌شده لحظه معامله: ${formatNumber(o.rate_used)}</div>
+        <div style="margin-top:6px;">${receiptGuide}</div>
+        <div class="notice-box">${buildContactBlockHtml(state.activeExchange)}</div>
+      `;
+      document.getElementById("sendAmountInput").value = "";
+      updateCalculation();
+      await loadMyOrders();
+    } catch (err) {
+      alert(err.message);
     }
-
-    function copyCardNumber() {
-      const card = document.getElementById("cardNumberText").textContent.trim();
-      if (!card || card === "-") return;
-      if (navigator.clipboard && navigator.clipboard.writeText) {
-        navigator.clipboard.writeText(card).then(() => showAlert("شماره کارت کپی شد.", false));
-      } else {
-        showAlert("شماره کارت: " + card, false);
-      }
     }
+      function statusLabel(st) {
+    if (st === "awaiting_receipt") return `<span class="badge badge-warn">در انتظار آپلود رسید</span>`;
+    if (st === "under_review") return `<span class="badge">در حال بررسی مدیر</span>`;
+    if (st === "approved") return `<span class="badge badge-ok">تایید شد</span>`;
+    if (st === "rejected") return `<span class="badge badge-err">رد شد</span>`;
+    return `<span class="badge">${st}</span>`;
+  }
 
-    async function submitOrder() {
-      clearAlert();
-      const r = getSelectedRateObj();
-      const amountPaid = parseFloat(document.getElementById("amountPaidInput").value) || 0;
-      if (!r || amountPaid <= 0) {
-        showAlert("نرخ و مبلغ معتبر وارد کنید.");
-        return;
-      }
-      try {
-        const data = await apiFetch("/api/orders", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            exchange_id: state.exchange.id,
-            rate_card_id: r.id,
-            amount_paid: amountPaid
-          })
-        });
-        state.selectedOrderId = data.order.id;
-        document.getElementById("activeReceiptBox").classList.remove("hidden");
-        document.getElementById("activeOrderCode").textContent = data.order.tracking_code;
-        showAlert(`سفارش ${data.order.tracking_code} ثبت شد. اکنون رسید را بفرستید.`, false);
-        await bootApp(state.exchange.id);
-      } catch (err) {
-        showAlert(err.message);
-      }
-    }
-
-    async function uploadReceipt() {
-      clearAlert();
-      const fileInput = document.getElementById("receiptFileInput");
-      if (!state.selectedOrderId) {
-        showAlert("ابتدا یک سفارش ثبت کنید یا از لیست سفارش‌ها یک مورد را انتخاب کنید.");
-        return;
-      }
-      if (!fileInput.files || !fileInput.files[0]) {
-        showAlert("لطفاً عکس رسید را انتخاب کنید.");
-        return;
-      }
-      const formData = new FormData();
-      formData.append("receipt", fileInput.files[0]);
-
-      try {
-        const res = await apiFetch(`/api/orders/${state.selectedOrderId}/receipt`, {
-          method: "POST",
-          body: formData
-        });
-        fileInput.value = "";
-        showAlert(
-          res.duplicate_suspect
-            ? "رسید ارسال شد (توجه: سیستم این فایل را مشابه رسید قبلی تشخیص داد)."
-            : "رسید با موفقیت ارسال شد و در صف بررسی مدیر قرار گرفت.",
-          false
-        );
-        await bootApp(state.exchange.id);
-      } catch (err) {
-        showAlert(err.message);
-      }
-    }
-
-    function selectOrderForReceipt(orderId, code) {
-      state.selectedOrderId = orderId;
-      document.getElementById("activeReceiptBox").classList.remove("hidden");
-      document.getElementById("activeOrderCode").textContent = code;
-      window.scrollTo({ top: 0, behavior: "smooth" });
-    }
-
-    function statusBadge(st) {
-      if (st === "approved") return `<span class="badge b-approved">تایید شده</span>`;
-      if (st === "rejected") return `<span class="badge b-rejected">رد شده</span>`;
-      if (st === "under_review") return `<span class="badge b-review">در حال بررسی</span>`;
-      return `<span class="badge b-pending">در انتظار رسید</span>`;
-    }
-
-    function renderMyOrders() {
-      const box = document.getElementById("myOrdersList");
-      if (!state.orders.length) {
-        box.innerHTML = `<p class="muted">هنوز سفارشی ثبت نکرده‌اید.</p>`;
-        return;
-      }
-      box.innerHTML = state.orders.map(o => `
-        <div class="subbox">
-          <div class="row">
-            <strong>${escapeHtml(o.tracking_code)}</strong>
-            ${statusBadge(o.status)}
-          </div>
-          <div class="muted">${escapeHtml(o.pair_label)} | پرداختی: ${o.amount_paid} | دریافتی: ${o.amount_receive}</div>
-          ${o.reject_reason ? `<div style="color:#f87171; font-size:12px;">علت رد: ${escapeHtml(o.reject_reason)}</div>` : ""}
-          ${(o.status === "pending_receipt" || o.status === "rejected") ? `
-            <button class="btn-blue" onclick="selectOrderForReceipt(${o.id}, '${escapeAttr(o.tracking_code)}')">آپلود / ارسال مجدد رسید</button>
-          ` : ""}
-        </div>
-      `).join("");
-    }
-
-    function switchTab(tabName) {
-      const clientPanel = document.getElementById("clientPanel");
-      const adminPanel = document.getElementById("adminPanel");
-      if (tabName === "admin" && state.isAdmin) {
-        clientPanel.classList.add("hidden");
-        adminPanel.classList.remove("hidden");
-        loadAdminOrders();
-      } else {
-        adminPanel.classList.add("hidden");
-        clientPanel.classList.remove("hidden");
-      }
-    }
-
-    async function loadAdminOrders() {
-      if (!state.exchange || !state.isAdmin) return;
-      clearAlert();
-      const st = document.getElementById("adminFilterSelect").value;
-      const q = new URLSearchParams({ exchange_id: state.exchange.id });
-      if (st) q.set("status", st);
-      try {
-        const data = await apiFetch("/api/admin/orders?" + q.toString(), { method: "GET" });
-        renderAdminOrders(data.orders || []);
-      } catch (err) {
-        showAlert(err.message);
-      }
-    }
-
-    function renderAdminOrders(list) {
-      const box = document.getElementById("adminOrdersList");
+  async function loadMyOrders() {
+    const box = document.getElementById("myOrdersList");
+    try {
+      const data = await apiFetch("/api/orders");
+      const list = data.orders || [];
       if (!list.length) {
-        box.innerHTML = `<p class="muted">سفارشی با این فیلتر پیدا نشد.</p>`;
+        box.innerHTML = "هنوز سفارشی ثبت نکرده‌اید.";
         return;
       }
       box.innerHTML = list.map(o => `
-        <div class="subbox">
+        <div class="subcard">
           <div class="row">
-            <strong>${escapeHtml(o.tracking_code)} (@${escapeHtml(o.username || String(o.user_telegram_id))})</strong>
-            ${statusBadge(o.status)}
+            <strong>کد: ${o.tracking_code}</strong>
+            ${statusLabel(o.status)}
           </div>
-          <div class="muted">${escapeHtml(o.pair_label)} | پرداختی: ${o.amount_paid} | دریافتی: ${o.amount_receive}</div>
-          ${o.is_duplicate_suspect ? `<div style="margin-top:4px;"><span class="badge b-warn">هشدار رسید تکراری</span></div>` : ""}
-          ${o.receipt_file ? `<div class="muted">فایل رسید: ${escapeHtml(o.receipt_file)}</div>` : `<div class="muted">رسید هنوز ارسال نشده</div>`}
-          <input id="reason_${o.id}" type="text" placeholder="دلیل رد (در صورت رد کردن)" value="${escapeAttr(o.reject_reason || "")}" />
+          <div>${formatNumber(o.send_amount)} ${o.from_currency} (${o.pay_method === "card" ? "کارتی" : "نقدی"}) ← ${formatNumber(o.receive_amount)} ${o.to_currency} (${o.receive_method === "card" ? "کارتی" : "نقدی"})</div>
+          <div class="muted">نرخ معامله: ${formatNumber(o.rate_used)}</div>
+          ${o.customer_holder_name ? `<div class="muted">دارنده حساب دریافتی: ${o.customer_holder_name}</div>` : ""}
+          ${o.customer_dest_card ? `<div class="muted ltr">کارت دریافتی: ${o.customer_dest_card}</div>` : ""}
+          ${o.admin_note ? `<div class="muted">پاسخ مدیر: ${o.admin_note}</div>` : ""}
+          ${o.pay_method === "card" ? `
+            <div style="margin-top:8px;">
+              <input type="file" id="file_${o.id}" accept=".png,.jpg,.jpeg,.webp,.pdf" />
+              <button class="btn-blue" onclick="uploadReceipt(${o.id})">ارسال / جایگزینی رسید</button>
+            </div>
+          ` : `<div class="muted" style="margin-top:6px;">پرداخت نقدی (نیاز به آپلود رسید کارتی ندارد)</div>`}
+        </div>
+      `).join("");
+    } catch (err) {
+      box.innerHTML = "خطا: " + err.message;
+    }
+  }
+
+  async function uploadReceipt(orderId) {
+    const inp = document.getElementById("file_" + orderId);
+    if (!inp || !inp.files || !inp.files[0]) {
+      alert("ابتدا فایل رسید را انتخاب کنید.");
+      return;
+    }
+    const fd = new FormData();
+    fd.append("receipt", inp.files[0]);
+
+    try {
+      await apiFetch(`/api/orders/${orderId}/receipt`, {
+        method: "POST",
+        body: fd
+      });
+      alert("رسید با موفقیت ارسال شد و در صف بررسی مدیر قرار گرفت.");
+      await loadMyOrders();
+    } catch (err) {
+      alert(err.message);
+    }
+  }
+
+  function switchTab(tab) {
+    if (tab === "client") {
+      document.getElementById("clientView").classList.remove("hidden");
+      document.getElementById("adminView").classList.add("hidden");
+      document.getElementById("tabClientBtn").className = "btn-blue";
+      document.getElementById("tabAdminBtn").className = "btn-gray";
+    } else {
+      document.getElementById("clientView").classList.add("hidden");
+      document.getElementById("adminView").classList.remove("hidden");
+      document.getElementById("tabClientBtn").className = "btn-gray";
+      document.getElementById("tabAdminBtn").className = "btn-blue";
+      loadAdminOrders();
+    }
+  }
+
+  function fillAdminForm(ex) {
+    const p = ex.payment_accounts || {};
+    const lim = ex.limits || {};
+    document.getElementById("admName").value = ex.name || "";
+    document.getElementById("admRateAmdToIrt").value = ex.rates.AMD_TO_IRT;
+    document.getElementById("admRateIrtToAmd").value = ex.rates.IRT_TO_AMD;
+    document.getElementById("admRateUsdToIrt").value = ex.rates.USD_TO_IRT;
+    document.getElementById("admRateIrtToUsd").value = ex.rates.IRT_TO_USD;
+    document.getElementById("admRateUsdToAmd").value = ex.rates.USD_TO_AMD;
+    document.getElementById("admRateAmdToUsd").value = ex.rates.AMD_TO_USD;
+
+    document.getElementById("admMinAmd").value = (lim.AMD && lim.AMD.min) || 100;
+    document.getElementById("admMaxAmd").value = (lim.AMD && lim.AMD.max) || 1000000;
+    document.getElementById("admMinIrt").value = (lim.IRT && lim.IRT.min) || 10000;
+    document.getElementById("admMaxIrt").value = (lim.IRT && lim.IRT.max) || 7500000000;
+    document.getElementById("admMinUsd").value = (lim.USD && lim.USD.min) || 1;
+    document.getElementById("admMaxUsd").value = (lim.USD && lim.USD.max) || 25000;
+
+    document.getElementById("admHolderIrt").value = (p.IRT && p.IRT.holder) || "تست تومان";
+    document.getElementById("admCardIrt").value = (p.IRT && p.IRT.card) || "";
+    document.getElementById("admShebaIrt").value = (p.IRT && p.IRT.sheba) || "";
+    document.getElementById("admAccountIrt").value = (p.IRT && p.IRT.account) || "";
+    document.getElementById("admBankIrt").value = (p.IRT && p.IRT.bank) || "بانک ملت";
+
+    document.getElementById("admHolderAmd").value = (p.AMD && p.AMD.holder) || "تست درام";
+    document.getElementById("admCardAmd").value = (p.AMD && p.AMD.card) || "";
+    document.getElementById("admBankAmd").value = (p.AMD && p.AMD.bank) || "Ameria بانک";
+
+    document.getElementById("admHolderUsd").value = (p.USD && p.USD.holder) || "تست دلار";
+    document.getElementById("admCardUsd").value = (p.USD && p.USD.card) || "";
+    document.getElementById("admCardTypeUsd").value = (p.USD && p.USD.card_type) || "VISA کارت";
+
+    document.getElementById("admAddress").value = ex.contact.address || "";
+    document.getElementById("admHours").value = ex.contact.working_hours || "";
+    document.getElementById("admPhone").value = ex.contact.phone || "";
+    document.getElementById("admWhatsapp").value = ex.contact.whatsapp || "";
+    document.getElementById("admTelegram").value = ex.contact.telegram || "";
+
+    if (state.user && state.user.is_super_admin) {
+      document.getElementById("superAdminIdsBox").classList.remove("hidden");
+      document.getElementById("superAdminCreateCard").classList.remove("hidden");
+      document.getElementById("admAdminIds").value = ex.admin_ids || "";
+      document.getElementById("allExchangesInfo").textContent =
+        "صرافی‌های ثبت‌شده: " + state.allExchanges.map(x => `${x.name} (${x.id})`).join(" | ");
+    }
+  }
+
+  async function saveExchangeSettings() {
+    const ex = state.activeExchange;
+    if (!ex) return;
+    const msgEl = document.getElementById("adminSaveMsg");
+    msgEl.textContent = "در حال ذخیره...";
+
+    const payload = {
+      exchange_id: ex.id,
+      name: document.getElementById("admName").value.trim(),
+      rate_amd_to_irt: parseFloat(document.getElementById("admRateAmdToIrt").value),
+      rate_irt_to_amd: parseFloat(document.getElementById("admRateIrtToAmd").value),
+      rate_usd_to_irt: parseFloat(document.getElementById("admRateUsdToIrt").value),
+      rate_irt_to_usd: parseFloat(document.getElementById("admRateIrtToUsd").value),
+      rate_usd_to_amd: parseFloat(document.getElementById("admRateUsdToAmd").value),
+      rate_amd_to_usd: parseFloat(document.getElementById("admRateAmdToUsd").value),
+      min_amd: parseFloat(document.getElementById("admMinAmd").value),
+      max_amd: parseFloat(document.getElementById("admMaxAmd").value),
+      min_irt: parseFloat(document.getElementById("admMinIrt").value),
+      max_irt: parseFloat(document.getElementById("admMaxIrt").value),
+      min_usd: parseFloat(document.getElementById("admMinUsd").value),
+      max_usd: parseFloat(document.getElementById("admMaxUsd").value),
+      holder_irt: document.getElementById("admHolderIrt").value.trim(),
+      card_irt: document.getElementById("admCardIrt").value.trim(),
+      sheba_irt: document.getElementById("admShebaIrt").value.trim(),
+      account_irt: document.getElementById("admAccountIrt").value.trim(),
+      bank_irt: document.getElementById("admBankIrt").value.trim(),
+      holder_amd: document.getElementById("admHolderAmd").value.trim(),
+      card_amd: document.getElementById("admCardAmd").value.trim(),
+      bank_amd: document.getElementById("admBankAmd").value.trim(),
+      holder_usd: document.getElementById("admHolderUsd").value.trim(),
+      card_usd: document.getElementById("admCardUsd").value.trim(),
+      card_type_usd: document.getElementById("admCardTypeUsd").value.trim(),
+      address: document.getElementById("admAddress").value.trim(),
+      working_hours: document.getElementById("admHours").value.trim(),
+      phone: document.getElementById("admPhone").value.trim(),
+      whatsapp: document.getElementById("admWhatsapp").value.trim(),
+      telegram: document.getElementById("admTelegram").value.trim()
+    };
+
+    if (state.user && state.user.is_super_admin) {
+      payload.admin_ids = document.getElementById("admAdminIds").value.trim();
+    }
+
+    try {
+      const data = await apiFetch("/api/admin/exchange/settings", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload)
+      });
+      state.activeExchange = data.exchange;
+      renderActiveExchange();
+      msgEl.textContent = "تمام نرخ‌ها، سقف‌های عملیاتی، دارنده حساب‌ها و اطلاعات صرافی ذخیره شدند.";
+    } catch (err) {
+      msgEl.textContent = "خطا: " + err.message;
+    }
+  }
+
+  async function createNewExchange() {
+    const id = document.getElementById("newExId").value.trim().toLowerCase();
+    const name = document.getElementById("newExName").value.trim();
+    const admin_ids = document.getElementById("newExAdmins").value.trim();
+    try {
+      await apiFetch("/api/admin/exchanges", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ id, name, admin_ids })
+      });
+      alert("صرافی جدید ایجاد شد. لینک اختصاصی آن: startapp=" + id);
+      await initApp();
+    } catch (err) {
+      alert(err.message);
+    }
+  }
+
+  async function loadAdminOrders() {
+    const ex = state.activeExchange;
+    if (!ex) return;
+    const box = document.getElementById("adminOrdersList");
+    try {
+      const data = await apiFetch(`/api/admin/orders?exchange_id=${encodeURIComponent(ex.id)}`);
+      const list = data.orders || [];
+      if (!list.length) {
+        box.innerHTML = "هنوز سفارشی ثبت نشده است.";
+        return;
+      }
+      const base = state.backendUrl.replace(/\/+$/, "");
+      box.innerHTML = list.map(o => `
+        <div class="subcard">
           <div class="row">
-            <button class="btn-green" style="flex:1;" onclick="decideOrder(${o.id}, 'approve')">تایید سفارش</button>
-            <button class="btn-red" style="flex:1;" onclick="decideOrder(${o.id}, 'reject')">رد سفارش</button>
+            <strong>${o.tracking_code} — ${o.first_name || o.user_id}</strong>
+            ${statusLabel(o.status)}
+          </div>
+          <div>${formatNumber(o.send_amount)} ${o.from_currency} (${o.pay_method === "card" ? "کارتی" : "نقدی"}) ← ${formatNumber(o.receive_amount)} ${o.to_currency} (${o.receive_method === "card" ? "کارتی" : "نقدی"})</div>
+          <div class="muted">نرخ ثبت‌شده: ${formatNumber(o.rate_used)}</div>
+          ${o.customer_holder_name ? `<div class="muted">نام دارنده حساب مشتری: <strong>${o.customer_holder_name}</strong></div>` : ""}
+          ${o.customer_dest_card ? `<div class="muted ltr">کارت مقصد مشتری: ${o.customer_dest_card}</div>` : ""}
+          ${o.customer_sheba ? `<div class="muted ltr">شبا: ${o.customer_sheba}</div>` : ""}
+          ${o.customer_account ? `<div class="muted ltr">حساب: ${o.customer_account}</div>` : ""}
+          ${o.customer_bank_or_card_type ? `<div class="muted">بانک / نوع کارت مشتری: ${o.customer_bank_or_card_type}</div>` : ""}
+          ${o.note ? `<div class="muted">توضیح مشتری: ${o.note}</div>` : ""}
+          ${o.duplicate_suspect ? `<div style="color:#f87171;font-weight:bold;">هشدار: این فایل رسید قبلاً در سفارش دیگری استفاده شده است!</div>` : ""}
+          ${o.receipt_filename ? `<div style="margin-top:6px;"><a href="${base}/api/receipts/${o.receipt_filename}" target="_blank" style="color:#60a5fa;">مشاهده فایل رسید</a></div>` : "<div class='muted'>فایل رسیدی ثبت نشده</div>"}
+          <input id="adm_note_${o.id}" placeholder="توضیح مدیر برای مشتری (اختیاری)" value="${o.admin_note || ""}" />
+          <div class="row" style="margin-top:6px;">
+            <button style="flex:1;" class="btn-green" onclick="decideOrder(${o.id}, 'approved')">تایید سفارش</button>
+            <button style="flex:1;" class="btn-red" onclick="decideOrder(${o.id}, 'rejected')">رد سفارش</button>
           </div>
         </div>
       `).join("");
+    } catch (err) {
+      box.innerHTML = "خطا: " + err.message;
     }
+  }
 
-    async function decideOrder(orderId, decision) {
-      clearAlert();
-      const reasonEl = document.getElementById("reason_" + orderId);
-      const reason = reasonEl ? reasonEl.value.trim() : "";
-      try {
-        await apiFetch(`/api/admin/orders/${orderId}/decision`, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ decision, reason })
-        });
-        showAlert("وضعیت سفارش ثبت شد.", false);
-        loadAdminOrders();
-      } catch (err) {
-        showAlert(err.message);
-      }
+  async function decideOrder(orderId, decision) {
+    const admin_note = document.getElementById("adm_note_" + orderId).value.trim();
+    try {
+      await apiFetch(`/api/admin/orders/${orderId}/decision`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ decision, admin_note })
+      });
+      await loadAdminOrders();
+    } catch (err) {
+      alert(err.message);
     }
+  }
 
-    function escapeHtml(str) {
-      return String(str || "")
-        .replace(/&/g, "&amp;")
-        .replace(/</g, "&lt;")
-        .replace(/>/g, "&gt;")
-        .replace(/"/g, "&quot;");
-    }
-
-    function escapeAttr(str) {
-      return escapeHtml(str).replace(/'/g, "&#39;");
-    }
-
-    document.getElementById("apiBaseInput").value = state.apiBase;
-    document.getElementById("devAuthInput").value = state.devAuth;
-
-    // Show dev auth field when opened outside Telegram WebApp
-    if (!tg || !tg.initData) {
-      document.getElementById("devAuthRow").classList.remove("hidden");
-    }
-
-    if (state.apiBase && (getInitData().length > 0)) {
-      bootApp();
-    }
-  </script>
+  initApp();
+</script>
 </body>
 </html>
