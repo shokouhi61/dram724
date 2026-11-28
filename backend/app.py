@@ -610,7 +610,7 @@ def orders():
     except ValueError as e:
         conn.close()
         return jsonify({"ok": False, "error": str(e)}), 400
-                initial_status = "awaiting_receipt" if pay_method == "card" else "under_review"
+    initial_status = "awaiting_receipt" if pay_method == "card" else "under_review"
     now_dt = datetime.now(timezone.utc)
     now = now_dt.isoformat()
     tracking_code = f"DR-{int(now_dt.timestamp()) % 1000000}"
